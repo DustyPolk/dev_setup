@@ -488,7 +488,9 @@ verify_installations() {
     
     for tool_check in "${tools[@]}"; do
         IFS=':' read -r tool check_cmd <<< "$tool_check"
-        if command -v "${tool%% *}" &> /dev/null; then
+        # Extract the command name from the tool name (handle aliases like 'ripgrep' -> 'rg')
+        cmd_name=$(echo "$check_cmd" | cut -d' ' -f1)
+        if command -v "$cmd_name" &> /dev/null; then
             version=$(eval "$check_cmd" 2>/dev/null || echo "version unknown")
             success "$tool: $version"
         else
