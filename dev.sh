@@ -396,75 +396,7 @@ create_configs() {
         fi
     fi
     
-    # tmux configuration
-    if [ ! -f "$HOME/.tmux.conf" ]; then
-        cat > "$HOME/.tmux.conf" << 'EOF'
-# Enhanced tmux configuration
-
-# Set prefix to Ctrl-a
-set -g prefix C-a
-unbind C-b
-bind C-a send-prefix
-
-# Split panes using | and -
-bind | split-window -h -c "#{pane_current_path}"
-bind - split-window -v -c "#{pane_current_path}"
-unbind '"'
-unbind %
-
-# Enable mouse
-set -g mouse on
-
-# Start windows and panes at 1
-set -g base-index 1
-setw -g pane-base-index 1
-
-# Renumber windows on close
-set -g renumber-windows on
-
-# Increase history limit
-set -g history-limit 10000
-
-# Faster key repetition
-set -s escape-time 0
-
-# Reload config
-bind r source-file ~/.tmux.conf \; display "Config reloaded!"
-
-# Vim-style pane navigation
-bind h select-pane -L
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
-
-# Resize panes
-bind -r H resize-pane -L 5
-bind -r J resize-pane -D 5
-bind -r K resize-pane -U 5
-bind -r L resize-pane -R 5
-
-# Colors and styling
-set -g default-terminal "screen-256color"
-set -ga terminal-overrides ",*256col*:Tc"
-
-# Status bar
-set -g status-bg black
-set -g status-fg white
-set -g status-interval 60
-set -g status-left-length 30
-set -g status-left '#[fg=green](#S) #(whoami)'
-set -g status-right '#[fg=yellow]#(cut -d " " -f 1-3 /proc/loadavg)#[default] #[fg=white]%H:%M#[default]'
-
-# Copy mode
-setw -g mode-keys vi
-bind -T copy-mode-vi v send-keys -X begin-selection
-bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
-EOF
-        success "Created tmux configuration"
-    else
-        warning "tmux configuration already exists"
-        backup_config "$HOME/.tmux.conf"
-    fi
+    # tmux will use default configuration (no custom .tmux.conf created)
 }
 
 # Install all tools
@@ -498,6 +430,21 @@ install_tools() {
             error "Failed to install Claude Code"
         }
     fi
+}
+
+# Setup Git configuration
+setup_git() {
+    log "Setting up Git configuration..."
+    
+    # Use environment variables with fallbacks
+    local git_email="${GIT_USER_EMAIL:-dpolk213@gmail.com}"
+    local git_name="${GIT_USER_NAME:-dustypolk}"
+    
+    # Set global git config
+    git config --global user.email "$git_email"
+    git config --global user.name "$git_name"
+    
+    success "Git configured with email: $git_email and name: $git_name"
 }
 
 # Setup aliases
@@ -564,6 +511,7 @@ main() {
     update_package_manager
     install_tools
     create_configs
+    setup_git
     setup_aliases
     
     echo ""
