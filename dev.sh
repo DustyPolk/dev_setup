@@ -369,6 +369,20 @@ create_configs() {
             # Rename to nvim
             mv "$HOME/.config/dotfiles-temp" "$HOME/.config/nvim"
             success "Neovim configuration cloned from GitHub"
+            
+            # Run install.sh if it exists in the cloned repository
+            if [ -f "$HOME/.config/nvim/install.sh" ]; then
+                log "Running Neovim configuration install script..."
+                cd "$HOME/.config/nvim"
+                if bash install.sh; then
+                    success "Neovim install script completed successfully"
+                else
+                    error "Neovim install script failed"
+                fi
+                cd - > /dev/null  # Return to previous directory
+            else
+                warning "No install.sh found in Neovim configuration"
+            fi
         else
             error "Failed to clone Neovim configuration from GitHub"
             # Create basic nvim directory as fallback
