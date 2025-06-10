@@ -357,6 +357,37 @@ install_nodejs() {
 create_configs() {
     log "Creating configuration files..."
     
+    # Pull tmux configuration from GitHub
+    if [ ! -d "$HOME/.config/tmux" ]; then
+        log "Cloning tmux configuration from GitHub..."
+        
+        # Ensure .config directory exists
+        mkdir -p "$HOME/.config"
+        
+        # Clone the tmux repository
+        if git clone https://github.com/DustyPolk/tmux.git "$HOME/.config/tmux" 2>/dev/null; then
+            success "tmux configuration cloned from GitHub"
+            
+            # Run setup.sh if it exists in the cloned repository
+            if [ -f "$HOME/.config/tmux/setup.sh" ]; then
+                log "Running tmux configuration setup script..."
+                cd "$HOME/.config/tmux"
+                if bash setup.sh; then
+                    success "tmux setup script completed successfully"
+                else
+                    error "tmux setup script failed"
+                fi
+                cd - > /dev/null  # Return to previous directory
+            else
+                warning "No setup.sh found in tmux configuration"
+            fi
+        else
+            error "Failed to clone tmux configuration from GitHub"
+        fi
+    else
+        warning "tmux configuration directory already exists"
+    fi
+    
     # Pull Neovim configuration from GitHub
     if [ ! -d "$HOME/.config/nvim" ]; then
         log "Cloning Neovim configuration from GitHub..."
@@ -395,8 +426,6 @@ create_configs() {
             backup_config "$HOME/.config/nvim"
         fi
     fi
-    
-    # tmux will use default configuration (no custom .tmux.conf created)
 }
 
 # Install all tools
